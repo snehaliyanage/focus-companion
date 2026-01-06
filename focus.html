@@ -64,6 +64,17 @@
       font-size: 11px;
       color: #5f667f;
     }
+
+    #history {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #b0b6cc;
+    }
+    
+    .history-item {
+      margin-top: 4px;
+    }
+
   </style>
 </head>
 <body>
@@ -81,10 +92,14 @@
     <div>
       <button onclick="stopTimer()">Stop</button>
     </div>
-
     <div class="info">
       Focus sessions today
       <div class="streak" id="sessions">0</div>
+    </div>
+
+    <div class="info">
+      History
+      <div id="history"></div>
     </div>
 
     <div class="footer">
@@ -92,43 +107,99 @@
     </div>
   </div>
 
-<script>
-  let timeLeft;
-  let interval;
-  let sessions = localStorage.getItem("sessions") || 0;
-
-  document.getElementById("sessions").innerText = sessions;
-
-  function startTimer(minutes) {
-    clearInterval(interval);
-    timeLeft = minutes * 60;
-    updateDisplay();
-
-    interval = setInterval(() => {
-      timeLeft--;
+  <script>
+    let timeLeft;
+    let interval;
+  
+    const STORAGE_KEY = "focusHistory";
+  
+    function today() {
+      return new Date().toISOString().split("T")[0];
+    }
+  
+    function loadHistory() {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    }
+  
+    function saveHistory(data) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+  
+    function updateHistoryView() {
+      const historyDiv = document.getElementById("history");
+      const data = loadHistory();
+      historyDiv.innerHTML = "";
+  
+      const days = Object.keys(data).slice(-5).reverse();
+  
+      days.forEach(date => {
+        const d = data[date];
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.textContent = `${date}: ${d.sessions} sessions · ${d.minutes} min`;
+        historyDiv.appendChild(div);
+      });
+    }
+  
+    function getTodayStats() {
+      const data = loadHistory();
+      return data[today()] || { sessions: 0, minutes: 0 };
+    }
+  
+    function updateTodayView() {
+      document.getElementById("sessions").innerText =
+        getTodayStats().sessions;
+    }
+  
+    function startTimer(minutes) {
+      clearInterval(interval);
+      timeLeft = minutes * 60;
       updateDisplay();
-
-      if (timeLeft <= 0) {
-        clearInterval(interval);
-        sessions++;
-        localStorage.setItem("sessions", sessions);
-        document.getElementById("sessions").innerText = sessions;
+  
+      interval = setInterval(() => {
+        timeLeft--;
+        updateDisplay();
+  
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          logSession(minutes);
+        }
+      }, 1000);
+    }
+  
+    function stopTimer() {
+      clearInterval(interval);
+    }
+  
+    function logSession(minutes) {
+      const data = loadHistory();
+      const d = today();
+  
+      if (!data[d]) {
+        data[d] = { sessions: 0, minutes: 0 };
       }
-    }, 1000);
-  }
+  
+      data[d].sessions += 1;
+      data[d].minutes += minutes;
+  
+      saveHistory(data);
+      updateTodayView();
+      updateHistoryView();
+    }
+  
+    function updateDisplay() {
+      let min = Math.floor(timeLeft / 60);
+      let sec = timeLeft % 60;
+      document.getElementById("timer").innerText =
+        String(min).padStart(2, "0") + ":" + String(sec).padStart(2, "0");
+    }
+  
+    updateTodayView();
+    updateHistoryView();
+  </script>
 
-  function stopTimer() {
-    clearInterval(interval);
-  }
-
-  function updateDisplay() {
-    let min = Math.floor(timeLeft / 60);
-    let sec = timeLeft % 60;
-    document.getElementById("timer").innerText =
-      String(min).padStart(2, "0") + ":" + String(sec).padStart(2, "0");
-  }
-</script>
 
 </body>
 </html>
+
 
