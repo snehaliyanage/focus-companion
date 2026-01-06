@@ -88,10 +88,13 @@
       <button onclick="startTimer(25)">25 min</button>
       <button onclick="startTimer(45)">45 min</button>
     </div>
-
+    
     <div>
+      <button onclick="togglePause()" id="pauseBtn">Pause</button>
       <button onclick="stopTimer()">Stop</button>
     </div>
+
+    
     <div class="info">
       Focus sessions today
       <div class="streak" id="sessions">0</div>
@@ -108,6 +111,7 @@
   </div>
 
   <script>
+    let paused = false;
     let timeLeft;
     let interval;
   
@@ -166,9 +170,23 @@
         }
       }, 1000);
     }
-  
+    
+    function runTimer() {
+      if (!paused) {
+        timeLeft--;
+        updateDisplay();
+    
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          logSession(Math.round((timeLeft + 1) / 60));
+        }
+      }
+    }
+    
     function stopTimer() {
       clearInterval(interval);
+      paused = false;
+      document.getElementById("pauseBtn").innerText = "Pause";
     }
   
     function logSession(minutes) {
@@ -193,7 +211,13 @@
       document.getElementById("timer").innerText =
         String(min).padStart(2, "0") + ":" + String(sec).padStart(2, "0");
     }
-  
+    
+    function togglePause() {
+      paused = !paused;
+      document.getElementById("pauseBtn").innerText =
+        paused ? "Continue" : "Pause";
+    }
+
     updateTodayView();
     updateHistoryView();
   </script>
@@ -201,5 +225,6 @@
 
 </body>
 </html>
+
 
 
