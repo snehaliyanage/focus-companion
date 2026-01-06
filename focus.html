@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Focus Companion</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0b0f1a;
+      color: #eaeaf0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .app {
+      width: 320px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    .timer {
+      font-size: 48px;
+      margin: 20px 0;
+      letter-spacing: 2px;
+    }
+
+    button {
+      background: #1f2a44;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      margin: 8px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button:active {
+      background: #2d3b5f;
+    }
+
+    .info {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #9aa0b5;
+    }
+
+    .streak {
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    .footer {
+      margin-top: 30px;
+      font-size: 11px;
+      color: #5f667f;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+    <h1>Focus Companion</h1>
+
+    <div class="timer" id="timer">25:00</div>
+
+    <div>
+      <button onclick="startTimer(25)">25 min</button>
+      <button onclick="startTimer(45)">45 min</button>
+    </div>
+
+    <div>
+      <button onclick="stopTimer()">Stop</button>
+    </div>
+
+    <div class="info">
+      Focus sessions today
+      <div class="streak" id="sessions">0</div>
+    </div>
+
+    <div class="footer">
+      Built for Sujanka · 25
+    </div>
+  </div>
+
+<script>
+  let timeLeft;
+  let interval;
+  let sessions = localStorage.getItem("sessions") || 0;
+
+  document.getElementById("sessions").innerText = sessions;
+
+  function startTimer(minutes) {
+    clearInterval(interval);
+    timeLeft = minutes * 60;
+    updateDisplay();
+
+    interval = setInterval(() => {
+      timeLeft--;
+      updateDisplay();
+
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        sessions++;
+        localStorage.setItem("sessions", sessions);
+        document.getElementById("sessions").innerText = sessions;
+      }
+    }, 1000);
+  }
+
+  function stopTimer() {
+    clearInterval(interval);
+  }
+
+  function updateDisplay() {
+    let min = Math.floor(timeLeft / 60);
+    let sec = timeLeft % 60;
+    document.getElementById("timer").innerText =
+      String(min).padStart(2, "0") + ":" + String(sec).padStart(2, "0");
+  }
+</script>
+
+</body>
+</html>
